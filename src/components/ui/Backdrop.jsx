@@ -25,7 +25,7 @@ const Overlay = styled.div`
   animation: ${fadeInContainer} 0.3s ease-in-out;
 `;
 
-function BackDrop() {
+function Backdrop() {
   return (
     <Overlay>
       <Spinner />
@@ -33,4 +33,4 @@ function BackDrop() {
   );
 }
 
-export default BackDrop;
+export default Backdrop;
