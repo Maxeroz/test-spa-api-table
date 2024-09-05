@@ -6,7 +6,6 @@ import { useLogin } from "../../features/authentication/useLogin";
 import Button from "./Button";
 import { useAuthContext } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import Spinner from "./Spinner";
 
 const StyledLoginForm = styled.form`
   display: flex;

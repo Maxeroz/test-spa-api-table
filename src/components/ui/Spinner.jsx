@@ -8,7 +8,6 @@ const SpinnerContainer = styled.div`
   align-items: center;
   height: 100vh;
   width: 100vw;
-  /* background-color: rgba(255, 255, 255, 0.8); */
 `;
 
 const SpinnerElement = styled.div`

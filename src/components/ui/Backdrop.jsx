@@ -21,7 +21,6 @@ const Overlay = styled.div`
   background-color: var(--backdrop-color);
   backdrop-filter: blur(4px);
   z-index: 1000;
-  /* transition: all 0.5s; */
 
   animation: ${fadeInContainer} 0.3s ease-in-out;
 `;

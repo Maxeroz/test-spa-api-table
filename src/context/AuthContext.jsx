@@ -9,7 +9,6 @@ function AuthProvider({ children }) {
   useEffect(() => {
     const token = localStorage.getItem("authToken");
     if (token) {
-      // Здесь можно добавить проверку токена на сервере, если требуется
       setIsAuth(true);
     }
     setIsLoading(false);

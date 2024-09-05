@@ -16,7 +16,6 @@ const theme = createTheme({
   typography: {
     fontFamily: "'Plus Jakarta Sans', sans-serif",
   },
-  // Дополнительные настройки темы могут быть добавлены здесь
 });
 
 const queryClient = new QueryClient({
@@ -70,7 +69,7 @@ function App() {
             error: {
               duration: 5000,
               iconTheme: {
-                primary: "var(--color-error-500)", // Зеленый красный иконки
+                primary: "var(--color-error-500)", // Красный цвет иконки
               },
             },
             style: {
