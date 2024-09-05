@@ -20,18 +20,46 @@ const StyledLoginForm = styled.form`
   gap: 20px;
 `;
 
+const FormInputContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+
+  gap: 30px;
+`;
+
 function LoginForm() {
   const navigate = useNavigate();
 
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("user1");
+  const [password, setPassword] = useState("password");
+
+  const [errors, setErrors] = useState({ username: "", password: "" });
 
   const { isAuth } = useAuthContext();
-
   const { login, isLoading } = useLogin();
+
+  const validate = () => {
+    let isValid = true;
+    let errors = { username: "", password: "" };
+
+    if (!username) {
+      errors.username = "Username обязательно.";
+      isValid = false;
+    }
+
+    if (!password) {
+      errors.password = "Password обязательно.";
+      isValid = false;
+    }
+
+    setErrors(errors);
+    return isValid;
+  };
 
   const handleSubmit = (event) => {
     event.preventDefault();
+
+    if (!validate()) return;
 
     login(
       { username, password },
@@ -51,21 +79,27 @@ function LoginForm() {
   return (
     <StyledLoginForm onSubmit={handleSubmit}>
       <Heading>Вход</Heading>
-      <FormInput
-        value={username}
-        placeholder="USERNAME"
-        type="text"
-        onChange={(e) => setUsername(e.target.value)}
-      />
+      <FormInputContainer>
+        <FormInput
+          value={username}
+          placeholder="USERNAME"
+          type="text"
+          onChange={(e) => setUsername(e.target.value)}
+          errors={errors.username}
+        />
+      </FormInputContainer>
 
-      <FormInput
-        value={password}
-        placeholder="PASSWORD"
-        type="password"
-        onChange={(e) => setPassword(e.target.value)}
-      />
+      <FormInputContainer>
+        <FormInput
+          value={password}
+          placeholder="PASSWORD"
+          type="password"
+          onChange={(e) => setPassword(e.target.value)}
+          errors={errors.password}
+        />
+      </FormInputContainer>
 
-      <Button disabled={isLoading}>Log in</Button>
+      <Button disabled={isLoading}>Войти</Button>
     </StyledLoginForm>
   );
 }

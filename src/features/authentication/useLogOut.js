@@ -12,8 +12,10 @@ export function useLogOut() {
     // Удаляем токен из localStorage
     logOutApi();
 
-    // Инвалидируем кеш для запроса с ключом 'table-data'
-    queryClient.invalidateQueries(["table-data"]);
+    // Удаляем кеш для запроса с ключом 'table-data'
+    queryClient.removeQueries(["table-data"], { exact: true });
+
+    // Переходим на узел login
     navigate("/login");
     handleAuthLogOut();
   };

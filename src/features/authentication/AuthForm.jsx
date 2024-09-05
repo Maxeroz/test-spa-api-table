@@ -3,11 +3,11 @@ import LoginForm from "../../components/ui/LoginForm";
 
 const StyledFormContainer = styled.div`
   width: 600px;
-  height: 360px;
+  height: 400px;
 
   border-radius: var(--border-radius-lg);
 
-  background-color: var(--color-secondary-100);
+  background-color: var(--color-primary-0);
 `;
 
 function AuthForm() {

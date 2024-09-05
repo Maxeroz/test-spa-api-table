@@ -31,7 +31,7 @@ function MainPage() {
   return (
     <StyledMainPage>
       <LogOutButton onClick={logout}>
-        <Button type="secondary">Log out</Button>
+        <Button type="secondary">Выйти</Button>
       </LogOutButton>
       <BasicTable />
     </StyledMainPage>
