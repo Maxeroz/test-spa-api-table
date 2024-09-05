@@ -5,10 +5,12 @@ const StyledRow = styled.div`
 
   align-items: center;
   justify-content: space-between;
+
+  width: 100%;
 `;
 
-function Row() {
-  return <StyledRow></StyledRow>;
+function Row({ children }) {
+  return <StyledRow>{children}</StyledRow>;
 }
 
 export default Row;

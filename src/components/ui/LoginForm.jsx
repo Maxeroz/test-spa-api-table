@@ -30,13 +30,13 @@ const FormInputContainer = styled.div`
 function LoginForm() {
   const navigate = useNavigate();
 
-  const [username, setUsername] = useState("user1");
+  const [username, setUsername] = useState("user10");
   const [password, setPassword] = useState("password");
 
   const [errors, setErrors] = useState({ username: "", password: "" });
 
   const { isAuth } = useAuthContext();
-  const { login, isLoading } = useLogin();
+  const { login, isPending } = useLogin();
 
   const validate = () => {
     let isValid = true;
@@ -72,8 +72,6 @@ function LoginForm() {
     );
   };
 
-  if (isLoading) return <Spinner />;
-
   if (isAuth) navigate("/");
 
   return (
@@ -99,7 +97,7 @@ function LoginForm() {
         />
       </FormInputContainer>
 
-      <Button disabled={isLoading}>Войти</Button>
+      <Button disabled={isPending}>Войти</Button>
     </StyledLoginForm>
   );
 }

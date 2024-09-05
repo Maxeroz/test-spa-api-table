@@ -11,8 +11,6 @@ export const getTableData = async () => {
     // Получаем данные из ответа
     const { data } = response.data;
 
-    console.log(response);
-
     const formattedData = data.map((item) => ({
       id: item.id,
       companySigDate: item.companySigDate,
@@ -35,3 +33,45 @@ export const getTableData = async () => {
     );
   }
 };
+
+// Функция для добавления новой записи
+export async function createRow(newRow) {
+  try {
+    // Отправляем POST-запрос с данными
+    const response = await apiClient.post(
+      "/ru/data/v3/testmethods/docs/userdocs/create",
+      newRow
+    );
+
+    // Проверяем успешность запроса (HTTP статус 200)
+    if (response.status === 200) {
+      console.log("Record created successfully:", response.data);
+      return response.data; // Возвращаем данные созданной записи
+    } else {
+      console.error("Failed to create record:", response.statusText);
+      return null;
+    }
+  } catch (error) {
+    console.error("Error creating record:", error);
+    throw error; // Выбрасываем ошибку для дальнейшей обработки
+  }
+}
+
+export async function deteleRow(id) {
+  try {
+    // Формируем URL для запроса
+    const url = `/ru/data/v3/testmethods/docs/userdocs/delete/${id}`;
+
+    // Отправляем POST запрос
+    const response = await apiClient.post(url);
+
+    // Проверяем, что запрос прошел успешно
+    if (response.data.error_code === 0) {
+      console.log("Запись успешно удалена");
+    } else {
+      console.error("Не удалось удалить запись:", response.data);
+    }
+  } catch (error) {
+    console.error("Ошибка при удалении записи:", error);
+  }
+}

@@ -4,6 +4,9 @@ import { useTable } from "../features/table/useTable";
 import Spinner from "../components/ui/Spinner";
 import { useLogOut } from "../features/authentication/useLogOut";
 import Button from "../components/ui/Button";
+import TableOperations from "../components/ui/TableOperations";
+import Row from "../components/ui/Row";
+import Heading from "../components/ui/Heading";
 
 // Стилевой компонент для главной страницы
 const StyledMainPage = styled.section`
@@ -11,14 +14,17 @@ const StyledMainPage = styled.section`
   align-items: center;
   justify-content: center;
   height: 100vh;
-  position: relative; /* Устанавливаем позиционирование родителя */
+  position: relative;
+  flex-direction: column;
+
+  gap: 10px;
 `;
 
 // Стилевой компонент для кнопки выхода
 const LogOutButton = styled.div`
-  position: absolute; /* Позиционируем кнопку абсолютно */
-  top: 20px; /* Расстояние от верхнего края */
-  left: 20px; /* Расстояние от левого края */
+  position: absolute;
+  top: 20px;
+  left: 20px;
 `;
 
 function MainPage() {
@@ -33,6 +39,12 @@ function MainPage() {
       <LogOutButton onClick={logout}>
         <Button type="secondary">Выйти</Button>
       </LogOutButton>
+
+      <Row>
+        <Heading as="h2">Таблица данных</Heading>
+        <TableOperations />
+      </Row>
+
       <BasicTable />
     </StyledMainPage>
   );

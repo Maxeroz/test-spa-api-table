@@ -10,7 +10,7 @@ export function useLogin() {
   // Используем useMutation для авторизации
   const {
     mutate: login,
-    isLoading,
+    isPending,
     error,
   } = useMutation({
     mutationFn: (credentials) =>
@@ -25,5 +25,5 @@ export function useLogin() {
     },
   });
 
-  return { login, isLoading, error };
+  return { login, isPending, error };
 }
