@@ -57,6 +57,37 @@ export async function createRow(newRow) {
   }
 }
 
+export async function updateRow(id, updatedRow) {
+  try {
+    // Отправляем POST-запрос с данными для обновления
+    const response = await apiClient.post(
+      `/ru/data/v3/testmethods/docs/userdocs/set/${id}`, // URL для обновления записи
+      updatedRow // Передаем обновленные данные в формате JSON
+    );
+
+    // Проверяем успешность запроса (HTTP статус 200)
+    if (response.status === 200) {
+      // Проверяем, что в ответе error_code = 0
+      if (response.data.error_code === 0) {
+        console.log("Record updated successfully:", response.data.data);
+        return response.data.data; // Возвращаем измененный объект
+      } else {
+        console.error(
+          "Failed to update record:",
+          response.data.error_message || "Unknown error"
+        );
+        return null;
+      }
+    } else {
+      console.error("Failed to update record:", response.statusText);
+      return null;
+    }
+  } catch (error) {
+    console.error("Error updating record:", error);
+    throw error; // Выбрасываем ошибку для дальнейшей обработки
+  }
+}
+
 export async function deteleRow(id) {
   try {
     // Формируем URL для запроса

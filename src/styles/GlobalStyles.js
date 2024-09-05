@@ -38,6 +38,8 @@ background-color: var(--color-secondary-100);
   --color-error-500: #DB2719;
   --color-error-600: #B71112;
 
+  --color-success-500: #9CD323;
+
 
   --border-radius-tiny: 3px;
   --border-radius-sm: 5px;

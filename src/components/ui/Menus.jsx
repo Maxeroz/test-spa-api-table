@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { HiEllipsisVertical } from "react-icons/hi2";
 import styled from "styled-components";
 import { useOutsideClick } from "../../hooks/useOutsideClick";
+import { useSearchParams } from "react-router-dom";
 
 const Menu = styled.div`
   display: flex;
@@ -87,10 +88,13 @@ function Menus({ children }) {
 }
 
 function Toggle({ id }) {
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const { openId, close, open, setPosition } = useContext(MenusContext);
 
   function handleClick(e) {
     const rect = e.target.closest("button").getBoundingClientRect();
+    setSearchParams({});
 
     setPosition({
       x: window.innerWidth - rect.width - rect.x,

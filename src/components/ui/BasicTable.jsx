@@ -1,7 +1,6 @@
-import styled, { keyframes } from "styled-components";
-import { useState } from "react";
+import styled, { keyframes, css } from "styled-components";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -9,40 +8,24 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Button from "./Button";
-
 import { format } from "date-fns";
-
-import { useCreateRow } from "../../features/table/useCreateRow";
-import { useTable } from "../../features/table/useTable";
-
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-
-import { HiMiniPlusCircle, HiTrash } from "react-icons/hi2";
+import {
+  HiMiniPlusCircle,
+  HiTrash,
+  HiPencil,
+  HiArrowDownOnSquareStack,
+} from "react-icons/hi2";
 import Menus from "./Menus";
 import Modal from "./Modal";
-import { Menu } from "@mui/material";
-import { useDeleteRow } from "../../features/table/useDeleteRow";
 import ConfirmDelete from "./ConfirmDelete";
+import { useCreateRow } from "../../features/table/useCreateRow";
+import { useTable } from "../../features/table/useTable";
+import { useUpdateRow } from "../../features/table/useUpdateRow";
+import { useDeleteRow } from "../../features/table/useDeleteRow";
+import BackDrop from "./BackDrop";
 
-// Анимация появления строк
-const fadeInRow = keyframes`
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-`;
-
-// Стиль для строки таблицы с анимацией
-const AnimatedTableRow = styled(TableRow)`
-  animation: ${fadeInRow} 0.5s ease-out;
-`;
-
-// Анимация появления ячеек
 const fadeInCell = keyframes`
   from {
     opacity: 0;
@@ -54,12 +37,6 @@ const fadeInCell = keyframes`
   }
 `;
 
-// Стиль для ячейки таблицы с анимацией
-const AnimatedTableCell = styled(TableCell)`
-  animation: ${fadeInCell} 0.5s ease-out;
-`;
-
-// Анимация для контейнера таблицы
 const fadeInContainer = keyframes`
   from {
     opacity: 0;
@@ -69,6 +46,29 @@ const fadeInContainer = keyframes`
     opacity: 1;
     transform: scale(1);
   }
+`;
+
+const animateOnUpdate = keyframes`
+  from {
+    background-color: var(--color-secondary-light);
+  }
+  to {
+    background-color: var(--color-primary-0);
+  }
+`;
+
+// Styled components с анимацией
+const AnimatedTableRow = styled(TableRow)`
+  animation: ${(props) =>
+    props.isUpdating
+      ? css`
+          ${animateOnUpdate} 0.5s ease-out
+        `
+      : "none"};
+`;
+
+const AnimatedTableCell = styled(TableCell)`
+  animation: ${fadeInCell} 0.5s ease-out;
 `;
 
 const StyledTableContainer = styled(TableContainer)`
@@ -95,6 +95,7 @@ const StyledHeadRow = styled(AnimatedTableRow)`
   font-weight: 600;
 `;
 
+// Форматирование даты
 const formatDate = (dateString) => {
   return format(new Date(dateString), "dd MMM yyyy");
 };
@@ -102,7 +103,9 @@ const formatDate = (dateString) => {
 export default function BasicTable() {
   const { tableData } = useTable();
   const { addRow, isPending: isAdding } = useCreateRow();
+  const { updateRow, isPending: isUpdating } = useUpdateRow();
   const { deleteRow, isPending: isDeleting } = useDeleteRow();
+
   const [newRow, setNewRow] = useState({
     companySigDate: "",
     companySignatureName: "",
@@ -114,20 +117,40 @@ export default function BasicTable() {
     employeeSignatureName: "",
   });
 
+  const [editingRowId, setEditingRowId] = useState(null);
+  const [editRowData, setEditRowData] = useState(null);
+  const [updatedRowIds, setUpdatedRowIds] = useState([]);
+
   const [searchParams, setSearchParams] = useSearchParams();
   const isAddingSession =
     searchParams.get("isAddingSession") === "true" || false;
 
+  useEffect(() => {
+    if (!isUpdating && editingRowId !== null) {
+      setUpdatedRowIds((prev) => [...prev, editingRowId]);
+    }
+  }, [isUpdating, editingRowId]);
+
+  // Обработчики изменений
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setNewRow((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setNewRow((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditRowData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleDateChange = (date, fieldName) => {
     setNewRow((prev) => ({
+      ...prev,
+      [fieldName]: date ? date.toISOString() : "",
+    }));
+  };
+
+  const handleEditDateChange = (date, fieldName) => {
+    setEditRowData((prev) => ({
       ...prev,
       [fieldName]: date ? date.toISOString() : "",
     }));
@@ -139,7 +162,6 @@ export default function BasicTable() {
       onSuccess: () => {
         searchParams.delete("isAddingSession");
         setSearchParams(searchParams);
-
         setNewRow({
           companySigDate: "",
           companySignatureName: "",
@@ -154,8 +176,33 @@ export default function BasicTable() {
     });
   };
 
+  const handleEditSubmit = (e, id) => {
+    e.preventDefault();
+    updateRow(
+      { id, updatedRow: editRowData },
+      {
+        onSuccess: () => {
+          setEditingRowId(null);
+          setEditRowData(null);
+        },
+      }
+    );
+  };
+
+  const startEditing = (row) => {
+    setEditingRowId(row.id);
+    setEditRowData(row);
+  };
+
+  const sortedTableData = tableData.slice().sort((a, b) => {
+    const dateA = new Date(a.companySigDate);
+    const dateB = new Date(b.companySigDate);
+    return dateA - dateB;
+  });
+
   return (
     <Menus>
+      {isUpdating && <BackDrop />}
       <StyledTableContainer>
         <Table sx={{ width: 1000 }}>
           <TableHead>
@@ -190,60 +237,166 @@ export default function BasicTable() {
               ></AnimatedTableCell>
             </StyledHeadRow>
           </TableHead>
-
           <TableBody>
-            {tableData.map((row) => (
-              <AnimatedTableRow key={row.id}>
-                <AnimatedTableCell align="center">
-                  {formatDate(row.companySigDate)}
-                </AnimatedTableCell>
-                <AnimatedTableCell align="center">
-                  {row.companySignatureName}
-                </AnimatedTableCell>
-                <AnimatedTableCell align="center">
-                  {row.documentName}
-                </AnimatedTableCell>
-                <AnimatedTableCell align="center">
-                  {row.documentStatus}
-                </AnimatedTableCell>
-                <AnimatedTableCell align="center">
-                  {row.documentType}
-                </AnimatedTableCell>
-                <AnimatedTableCell align="center">
-                  {row.employeeNumber}
-                </AnimatedTableCell>
-                <AnimatedTableCell align="center">
-                  {formatDate(row.employeeSigDate)}
-                </AnimatedTableCell>
-                <AnimatedTableCell align="center">
-                  {row.employeeSignatureName}
-                </AnimatedTableCell>
-                <AnimatedTableCell align="center">
-                  <Modal>
-                    <Menus.Menu>
-                      <Menus.Toggle id={row.id} />
-
-                      <Menus.List id={row.id}>
-                        <Modal.Open opens="delete">
-                          <Menus.Button icon={<HiTrash />}>
-                            Удалить
-                          </Menus.Button>
-                        </Modal.Open>
-                      </Menus.List>
-                    </Menus.Menu>
-
-                    <Modal.Window name="delete">
-                      <ConfirmDelete
-                        resourceName="ряд"
-                        disabled={isDeleting}
-                        onConfirm={() => deleteRow(row.id)}
+            {sortedTableData.map((row) => (
+              <AnimatedTableRow
+                key={row.id}
+                isUpdating={updatedRowIds.includes(row.id)}
+              >
+                {editingRowId === row.id ? (
+                  <>
+                    <AnimatedTableCell align="center">
+                      <DatePicker
+                        selected={
+                          editRowData.companySigDate
+                            ? new Date(editRowData.companySigDate)
+                            : null
+                        }
+                        onChange={(date) =>
+                          handleEditDateChange(date, "companySigDate")
+                        }
+                        dateFormat="yyyy-MM-dd"
+                        placeholderText="Дата..."
+                        disabled={isUpdating}
                       />
-                    </Modal.Window>
-                  </Modal>
-                </AnimatedTableCell>
+                    </AnimatedTableCell>
+                    <AnimatedTableCell align="center">
+                      <StyledInput
+                        name="companySignatureName"
+                        value={editRowData.companySignatureName}
+                        placeholder="Подпись компании"
+                        onChange={handleEditChange}
+                        disabled={isUpdating}
+                      />
+                    </AnimatedTableCell>
+                    <AnimatedTableCell align="center">
+                      <StyledInput
+                        name="documentName"
+                        value={editRowData.documentName}
+                        placeholder="Название документа"
+                        onChange={handleEditChange}
+                        disabled={isUpdating}
+                      />
+                    </AnimatedTableCell>
+                    <AnimatedTableCell align="center">
+                      <StyledInput
+                        name="documentStatus"
+                        value={editRowData.documentStatus}
+                        placeholder="Статус документа"
+                        onChange={handleEditChange}
+                        disabled={isUpdating}
+                      />
+                    </AnimatedTableCell>
+                    <AnimatedTableCell align="center">
+                      <StyledInput
+                        name="documentType"
+                        value={editRowData.documentType}
+                        placeholder="Тип документа"
+                        onChange={handleEditChange}
+                        disabled={isUpdating}
+                      />
+                    </AnimatedTableCell>
+                    <AnimatedTableCell align="center">
+                      <StyledInput
+                        name="employeeNumber"
+                        value={editRowData.employeeNumber}
+                        placeholder="Номер работника"
+                        onChange={handleEditChange}
+                        disabled={isUpdating}
+                      />
+                    </AnimatedTableCell>
+                    <AnimatedTableCell align="center">
+                      <DatePicker
+                        selected={
+                          editRowData.employeeSigDate
+                            ? new Date(editRowData.employeeSigDate)
+                            : null
+                        }
+                        onChange={(date) =>
+                          handleEditDateChange(date, "employeeSigDate")
+                        }
+                        dateFormat="yyyy-MM-dd"
+                        placeholderText="Дата..."
+                        disabled={isUpdating}
+                      />
+                    </AnimatedTableCell>
+                    <AnimatedTableCell align="center">
+                      <StyledInput
+                        name="employeeSignatureName"
+                        value={editRowData.employeeSignatureName}
+                        placeholder="Подпись работника"
+                        onChange={handleEditChange}
+                        disabled={isUpdating}
+                      />
+                    </AnimatedTableCell>
+                    <AnimatedTableCell align="center">
+                      <Button
+                        disabled={isUpdating}
+                        type="submit"
+                        size="small"
+                        onClick={(e) => handleEditSubmit(e, row.id)}
+                      >
+                        <HiArrowDownOnSquareStack />
+                      </Button>
+                    </AnimatedTableCell>
+                  </>
+                ) : (
+                  <>
+                    <AnimatedTableCell align="center">
+                      {formatDate(row.companySigDate)}
+                    </AnimatedTableCell>
+                    <AnimatedTableCell align="center">
+                      {row.companySignatureName}
+                    </AnimatedTableCell>
+                    <AnimatedTableCell align="center">
+                      {row.documentName}
+                    </AnimatedTableCell>
+                    <AnimatedTableCell align="center">
+                      {row.documentStatus}
+                    </AnimatedTableCell>
+                    <AnimatedTableCell align="center">
+                      {row.documentType}
+                    </AnimatedTableCell>
+                    <AnimatedTableCell align="center">
+                      {row.employeeNumber}
+                    </AnimatedTableCell>
+                    <AnimatedTableCell align="center">
+                      {formatDate(row.employeeSigDate)}
+                    </AnimatedTableCell>
+                    <AnimatedTableCell align="center">
+                      {row.employeeSignatureName}
+                    </AnimatedTableCell>
+                    <AnimatedTableCell align="center">
+                      <Modal>
+                        <Menus.Menu>
+                          <Menus.Toggle id={row.id} />
+                          <Menus.List id={row.id}>
+                            <Modal.Open opens="delete">
+                              <Menus.Button icon={<HiTrash />}>
+                                Удалить
+                              </Menus.Button>
+                            </Modal.Open>
+                            <Menus.Button
+                              icon={<HiPencil />}
+                              onClick={() => startEditing(row)}
+                            >
+                              Редактировать
+                            </Menus.Button>
+                          </Menus.List>
+                        </Menus.Menu>
+                        <Modal.Window name="delete">
+                          <ConfirmDelete
+                            resourceName="ряд"
+                            disabled={isDeleting}
+                            onConfirm={() => deleteRow(row.id)}
+                          />
+                        </Modal.Window>
+                      </Modal>
+                    </AnimatedTableCell>
+                  </>
+                )}
               </AnimatedTableRow>
             ))}
-
             {isAddingSession && (
               <AnimatedTableRow>
                 <AnimatedTableCell align="center">
@@ -266,7 +419,6 @@ export default function BasicTable() {
                     name="companySignatureName"
                     value={newRow.companySignatureName}
                     placeholder="Подпись компании"
-                    type="text"
                     onChange={handleChange}
                     disabled={isAdding}
                   />
@@ -276,7 +428,6 @@ export default function BasicTable() {
                     name="documentName"
                     value={newRow.documentName}
                     placeholder="Название документа"
-                    type="text"
                     onChange={handleChange}
                     disabled={isAdding}
                   />
@@ -286,7 +437,6 @@ export default function BasicTable() {
                     name="documentStatus"
                     value={newRow.documentStatus}
                     placeholder="Статус документа"
-                    type="text"
                     onChange={handleChange}
                     disabled={isAdding}
                   />
@@ -296,7 +446,6 @@ export default function BasicTable() {
                     name="documentType"
                     value={newRow.documentType}
                     placeholder="Тип документа"
-                    type="text"
                     onChange={handleChange}
                     disabled={isAdding}
                   />
@@ -306,7 +455,6 @@ export default function BasicTable() {
                     name="employeeNumber"
                     value={newRow.employeeNumber}
                     placeholder="Номер работника"
-                    type="text"
                     onChange={handleChange}
                     disabled={isAdding}
                   />
@@ -331,13 +479,17 @@ export default function BasicTable() {
                     name="employeeSignatureName"
                     value={newRow.employeeSignatureName}
                     placeholder="Подпись работника"
-                    type="text"
                     onChange={handleChange}
                     disabled={isAdding}
                   />
                 </AnimatedTableCell>
                 <AnimatedTableCell align="center">
-                  <Button type="submit" size="small" onClick={handleSubmit}>
+                  <Button
+                    disabled={isAdding}
+                    type="submit"
+                    size="small"
+                    onClick={handleSubmit}
+                  >
                     <HiMiniPlusCircle />
                   </Button>
                 </AnimatedTableCell>
