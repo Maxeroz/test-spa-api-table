@@ -6,13 +6,21 @@ const StyledInput = styled.input`
 
   font-size: 12px;
 
-  border: 1px solid var(--color-primary-100);
+  background-color: var(--color-primary-0);
 
+  border: 1px solid var(--color-primary-100);
   border-radius: var(--border-radius-md);
 `;
 
-function FormInput({ placeholder, type }) {
-  return <StyledInput placeholder={placeholder} type={type} />;
+function FormInput({ placeholder, type, value, onChange }) {
+  return (
+    <StyledInput
+      value={value}
+      placeholder={placeholder}
+      type={type}
+      onChange={onChange}
+    />
+  );
 }
 
 export default FormInput;

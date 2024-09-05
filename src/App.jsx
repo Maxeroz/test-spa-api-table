@@ -8,6 +8,15 @@ import MainPage from "./pages/MainPage";
 import { AuthProvider } from "./context/AuthContext";
 import GlobalStyles from "./styles/GlobalStyles";
 import { QueryClient } from "@tanstack/react-query";
+import ProtectedRoute from "./components/ui/ProtectedRoute";
+import { ThemeProvider, createTheme } from "@mui/material";
+
+const theme = createTheme({
+  typography: {
+    fontFamily: "'Plus Jakarta Sans', sans-serif",
+  },
+  // Дополнительные настройки темы могут быть добавлены здесь
+});
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -23,19 +32,28 @@ function App() {
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClient}>
-        <GlobalStyles />
+        <ThemeProvider theme={theme}>
+          <GlobalStyles />
 
-        <Router>
-          <Routes>
-            <Route path="/" element={<AppLayout />}>
-              <Route index element={<MainPage />} />
-            </Route>
-            <Route path="/login" element={<Login />} />
-          </Routes>
-        </Router>
+          <Router>
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <AppLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<MainPage />} />
+              </Route>
+              <Route path="/login" element={<Login />} />
+            </Routes>
+          </Router>
 
-        {/* Добавляем Devtools для удобства разработки */}
-        <ReactQueryDevtools initialIsOpen={false} />
+          {/* Добавляем Devtools для удобства разработки */}
+          <ReactQueryDevtools initialIsOpen={false} />
+        </ThemeProvider>
       </QueryClientProvider>
     </AuthProvider>
   );

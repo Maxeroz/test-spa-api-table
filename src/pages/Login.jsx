@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import AuthForm from "../components/ui/AuthForm";
+import AuthForm from "../features/authentication/AuthForm";
 
 const StyledLoginPage = styled.section`
   display: flex;

@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import LoginForm from "./LoginForm";
+import LoginForm from "../../components/ui/LoginForm";
 
 const StyledFormContainer = styled.div`
   width: 600px;
