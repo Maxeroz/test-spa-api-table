@@ -24,7 +24,7 @@ import { useCreateRow } from "../../features/table/useCreateRow";
 import { useTable } from "../../features/table/useTable";
 import { useUpdateRow } from "../../features/table/useUpdateRow";
 import { useDeleteRow } from "../../features/table/useDeleteRow";
-import BackDrop from "./BackDrop";
+import Backdrop from "./Backdrop";
 
 const fadeInCell = keyframes`
   from {
@@ -202,7 +202,7 @@ export default function BasicTable() {
 
   return (
     <Menus>
-      {isUpdating && <BackDrop />}
+      {isUpdating && <Backdrop />}
       <StyledTableContainer>
         <Table sx={{ width: 1000 }}>
           <TableHead>
